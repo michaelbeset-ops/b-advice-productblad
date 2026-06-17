@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 """
 Hot-folder watcher — bewaakt de map `input_zone/` en verwerkt elk nieuw JSON-bestand
-automatisch via productblad_core.generate_excel().
+volledig automatisch: browser openen, screenshots maken, Excel genereren.
 
 Gebruik:
-    pip install watchdog
     python watcher.py
 
-Mappenstructuur die automatisch wordt aangemaakt:
+Mappenstructuur (wordt automatisch aangemaakt):
     input_zone/   — drop hier je input.json bestanden
-    verwerkt/     — verwerkte JSON's worden hierheen verplaatst
+    verwerkt/     — succesvol verwerkte JSON's
     mislukt/      — JSON's die een fout veroorzaakten
+    Pythonwerk/   — gegenereerde Excel-bestanden per gemeente/locatie
 """
 
 import json
@@ -45,10 +45,9 @@ log = logging.getLogger(__name__)
 
 def verwerk_json(json_pad: str):
     bestandsnaam = os.path.basename(json_pad)
-    log.info(f"Nieuw bestand gedetecteerd: {bestandsnaam}")
+    log.info(f"Nieuw bestand gevonden: {bestandsnaam} — verwerking gestart")
 
-    # Wacht kort zodat het bestand volledig is geschreven
-    time.sleep(0.5)
+    time.sleep(0.5)  # Wacht tot bestand volledig is weggeschreven
 
     try:
         with open(json_pad, "r", encoding="utf-8") as f:
@@ -59,20 +58,20 @@ def verwerk_json(json_pad: str):
         return
 
     try:
-        from productblad_core import generate_excel
-        uitvoerpad = generate_excel(data)
-        log.info(f"Excel aangemaakt: {uitvoerpad}")
+        from auto_run import run_volledig
+        excel_pad = run_volledig(data)
+        log.info(f"Succes! Excel klaar: {excel_pad}")
         _verplaats(json_pad, DONE_DIR, bestandsnaam)
         log.info(f"{bestandsnaam} verplaatst naar verwerkt/")
     except Exception as e:
         import traceback
-        log.error(f"Generatie mislukt ({bestandsnaam}):\n{traceback.format_exc()}")
+        log.error(f"Verwerking mislukt ({bestandsnaam}):\n{traceback.format_exc()}")
         _verplaats(json_pad, FAILED_DIR, bestandsnaam)
+        log.warning(f"{bestandsnaam} verplaatst naar mislukt/")
 
 
 def _verplaats(bron: str, doel_map: str, naam: str):
     doel = os.path.join(doel_map, naam)
-    # Voorkom overschrijven bij dubbele namen
     if os.path.exists(doel):
         basis, ext = os.path.splitext(naam)
         doel = os.path.join(doel_map, f"{basis}_{int(time.time())}{ext}")
@@ -85,14 +84,18 @@ class JsonHandler(FileSystemEventHandler):
             verwerk_json(event.src_path)
 
     def on_moved(self, event):
-        # Vangt ook bestanden op die in de map worden gesleept via verkenner
         if not event.is_directory and event.dest_path.lower().endswith(".json"):
             verwerk_json(event.dest_path)
 
 
 if __name__ == "__main__":
-    log.info(f"Watcher gestart. Bewaakt: {INPUT_DIR}")
+    log.info("=" * 55)
+    log.info("  Productblad Watcher — B-Advice")
+    log.info("=" * 55)
+    log.info(f"Bewaakt map: {INPUT_DIR}")
+    log.info("Drop een input.json in input_zone/ om te starten.")
     log.info("Stop met Ctrl+C.")
+    log.info("-" * 55)
 
     observer = Observer()
     observer.schedule(JsonHandler(), INPUT_DIR, recursive=False)
@@ -102,6 +105,6 @@ if __name__ == "__main__":
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        log.info("Watcher gestopt.")
+        log.info("Watcher gestopt door gebruiker.")
         observer.stop()
     observer.join()

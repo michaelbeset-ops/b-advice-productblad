@@ -5,9 +5,9 @@ echo ================================================
 echo.
 echo Pakketten installeren... even geduld...
 echo.
-python -m pip install selenium openpyxl pyproj xlwings pyscreeze webdriver-manager Pillow requests
+py -m pip install selenium openpyxl pyproj watchdog webdriver-manager Pillow requests
 echo.
 echo ================================================
-echo  Klaar! Je kunt nu 2_start.bat gebruiken.
+echo  Klaar! Je kunt nu 2_start_watcher.bat gebruiken.
 echo ================================================
 pause
