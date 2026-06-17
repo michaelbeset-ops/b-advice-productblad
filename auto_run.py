@@ -65,12 +65,17 @@ def _screenshot_viewport(driver) -> Image.Image:
 def _crop_en_sla_op(driver, naam: str, output_dir: str, img: Image.Image = None):
     if img is None:
         img = _screenshot_viewport(driver)
+
+    # Sla altijd eerst het volledige scherm op als debug-referentie
+    debug_pad = os.path.join(output_dir, f"DEBUG_{naam}_volledig.png")
+    img.save(debug_pad)
+
     regio = CROP_REGIO.get(naam)
     if regio:
         img = img.crop(regio)
     pad = os.path.join(output_dir, f"{naam}.png")
     img.save(pad)
-    log.info(f"Screenshot opgeslagen: {naam}.png")
+    log.info(f"Screenshot opgeslagen: {naam}.png  (debug: DEBUG_{naam}_volledig.png)")
     return pad
 
 
@@ -557,13 +562,10 @@ def open_browsers_en_screenshot(data: dict, output_dir: str):
     )
 
     options = webdriver.ChromeOptions()
-    options.add_argument("--headless=new")        # onzichtbaar draaien
-    options.add_argument("--window-size=1920,1080")  # vaste schermgrootte voor screenshots
+    options.add_argument("--start-maximized")     # zichtbaar, zodat je kunt meekijken
     options.add_argument("--disable-infobars")
     options.add_argument("--disable-popup-blocking")
     options.add_argument("--disable-notifications")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--no-sandbox")
     options.add_argument("--lang=nl-NL")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option("useAutomationExtension", False)
