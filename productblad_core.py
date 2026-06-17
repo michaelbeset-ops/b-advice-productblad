@@ -1,16 +1,87 @@
 # -*- coding: utf-8 -*-
 """
 Headless kern-functie voor het genereren van een productblad-Excel.
-Wordt aangeroepen door watcher.py (hot-folder) én kan handmatig worden gebruikt.
+Wordt aangeroepen door watcher.py (hot-folder).
+
+Container JSON-formaat (nieuw, per container gespecificeerd):
+
+    "containers": {
+        "bestaand": [
+            {
+                "fractie":       "REST",
+                "containernummer": "OOC12345",
+                "type_put":      "TTC 5m3",
+                "constructie":   "Monolitisch",
+                "bouwjaar":      "2015",
+                "vloer":         "Klapvloer"
+            }
+        ],
+        "nieuw": [
+            {
+                "fractie":       "PMD",
+                "containernummer": "",
+                "type_put":      "TTC 5m3",
+                "constructie":   "Monolitisch",
+                "bouwjaar":      "",
+                "vloer":         "Klapvloer"
+            }
+        ]
+    }
+
+Kolommen in de Excel per containerrij:
+    A  — nummer + fractie       bijv. "1. OOC REST"
+    B  — containernummer        bijv. "OOC12345"  of "OOC........."
+    C  — status put             bijv. "Bestaand"
+    D  — type betonput          bijv. "TTC 5m3"
+    E  — "PUT"
+    F  — constructie            bijv. "Monolitisch"
+    G  — bouwjaar               bijv. "2015"
+    H  — vloer                  bijv. "Klapvloer"
 """
 
 import os
 import re
-import json
 
 FILE_LOCATION = os.path.dirname(os.path.realpath(__file__))
 DEPS = os.path.join(FILE_LOCATION, "Dependencies")
 KLIC = os.path.join(FILE_LOCATION, "KLIC")
+
+# ---------------------------------------------------------------------------
+# Presets: standaardwaarden per containertype
+#
+# Gebruik in JSON:  "preset": "OOC"  of  "preset": "BOC_PUT"  of  "preset": "BOC"
+# Je kunt altijd een veld handmatig overschrijven door het mee te geven.
+#
+#  OOC      → ondergrondse container met betonput en klapvloer
+#  BOC_PUT  → bovengrondse container MET betonput (GFT, PMD)
+#  BOC      → bovengrondse container ZONDER betonput (OPK, Glas, Textiel, ...)
+# ---------------------------------------------------------------------------
+PRESETS = {
+    "OOC": {
+        "containernummer": "OOC",
+        "type_put":        "TTC 5m3",
+        "put":             "Put",
+        "constructie":     "Monolitisch",
+        "bouwjaar":        "Bouwjaar",
+        "vloer":           "Klapvloer",
+    },
+    "BOC_PUT": {
+        "containernummer": "BOC",
+        "type_put":        "TTC 5m3",
+        "put":             "Put",
+        "constructie":     "Monolitisch",
+        "bouwjaar":        "Bouwjaar",
+        "vloer":           "",
+    },
+    "BOC": {
+        "containernummer": "BOC",
+        "type_put":        "",
+        "put":             "",
+        "constructie":     "Monolitisch",
+        "bouwjaar":        "Bouwjaar",
+        "vloer":           "",
+    },
+}
 
 
 def set_cell(sheet, cell_ref, value):
@@ -46,25 +117,41 @@ def add_image_to_range(sheet, img_path, from_cell, to_cell):
     sheet.add_image(img)
 
 
+def _vul_container_rij(sheet, rij: int, teller: int, container: dict, status_label: str):
+    """
+    Vul één containerrij in op het info-blad.
+    Bestaand: rijen 3-7  |  Nieuw: rijen 9-13
+
+    Werkt op twee manieren:
+      1. Met preset:  {"preset": "OOC", "fractie": "REST"}
+         → alle waarden komen uit PRESETS, je kunt velden nog losse overschrijven
+      2. Volledig handmatig: alle velden zelf opgeven
+    """
+    # Preset laden als opgegeven
+    preset_naam = str(container.get("preset", "")).upper()
+    basis = dict(PRESETS.get(preset_naam, PRESETS["OOC"]))  # OOC als fallback
+
+    # Handmatige velden overschrijven de preset
+    for veld in ("containernummer", "type_put", "put", "constructie", "bouwjaar", "vloer"):
+        if container.get(veld, "") not in ("", None):
+            basis[veld] = str(container[veld])
+
+    fractie     = str(container.get("fractie", "")).upper()
+    container_prefix = preset_naam if preset_naam in PRESETS else "OOC"
+
+    set_cell(sheet, f'A{rij}', f"{teller}. {container_prefix} {fractie}")
+    set_cell(sheet, f'B{rij}', basis["containernummer"])
+    set_cell(sheet, f'C{rij}', status_label)
+    set_cell(sheet, f'D{rij}', basis["type_put"])
+    set_cell(sheet, f'E{rij}', basis["put"])
+    set_cell(sheet, f'F{rij}', basis["constructie"])
+    set_cell(sheet, f'G{rij}', basis["bouwjaar"])
+    set_cell(sheet, f'H{rij}', basis["vloer"])
+
+
 def generate_excel(data: dict) -> str:
     """
-    Genereer een productblad-Excel op basis van een data-dict (afkomstig uit input.json).
-
-    Verwachte sleutels in `data`:
-        opdrachtgever   str   — naam van de gemeente / opdrachtgever
-        plaats          str
-        wijk            str
-        straat          str
-        huisnummer      str
-        toevoeging      str   (mag leeg zijn)
-        postcode        str
-        coordinaten     str   — "lat, lon"  bijv. "51.9225, 4.4792"
-        huishoudens     str/int
-        opmerkingen     str   (mag leeg zijn)
-        loopafstand     str/float  — in meters
-        containers      dict  — {"Rest": {"bestaand": 0, "nieuw": 0}, "GFT": {...}, ...}
-        extra_fotos     list  — optioneel, absolute paden naar extra PNG's
-
+    Genereer een productblad-Excel op basis van data-dict uit input.json.
     Geeft het pad naar het aangemaakte .xlsm-bestand terug.
     """
     from openpyxl.worksheet.datavalidation import DataValidation
@@ -85,10 +172,13 @@ def generate_excel(data: dict) -> str:
     containers    = data.get("containers", {})
     extra_fotos   = data.get("extra_fotos", [])
 
+    bestaand_lijst = containers.get("bestaand", [])
+    nieuw_lijst    = containers.get("nieuw",    [])
+
     # Locatiecode en output-map
     letters = re.findall(r'\D+', postcode)
     pc_letters = letters[0].strip() if letters else postcode
-    location_code = f"{pc_letters}{huisnr} - {straat}"
+    location_code    = f"{pc_letters}{huisnr} - {straat}"
     veilige_code     = re.sub(r'[\\/*?:"<>|]', '_', location_code).strip()
     veilige_gemeente = re.sub(r'[\\/*?:"<>|]', '_', plaats).strip()
     output_dir = os.path.join(FILE_LOCATION, "Pythonwerk", veilige_gemeente, veilige_code)
@@ -104,39 +194,15 @@ def generate_excel(data: dict) -> str:
 
     set_cell(info_sheet, 'D2', f"Gemeente: {opdrachtgever}")
 
-    # Containers
-    fracties   = ["Rest", "GFT", "PMD", "Papier", "Glas", "Textiel"]
-    put_waarden = ["PUT", "PUT", "PUT", "Put"]
+    # --- Bestaande containers (rijen 3 t/m 7, max 5) ---
+    for teller, container in enumerate(bestaand_lijst[:5], start=1):
+        _vul_container_rij(info_sheet, rij=2 + teller, teller=teller,
+                           container=container, status_label="Bestaand")
 
-    bestaand_rij = 3
-    teller_b = 1
-    for fractie in fracties:
-        aantal = int(containers.get(fractie, {}).get("bestaand", 0))
-        for _ in range(aantal):
-            if bestaand_rij <= 7:
-                set_cell(info_sheet, f'A{bestaand_rij}', f"{teller_b} OOC {fractie}")
-                set_cell(info_sheet, f'B{bestaand_rij}', "OOC........")
-                set_cell(info_sheet, f'C{bestaand_rij}', "Bouwjaar")
-                set_cell(info_sheet, f'F{bestaand_rij}', "monolitisch")
-                for i, put in enumerate(put_waarden):
-                    set_cell(info_sheet, f'E{bestaand_rij + i}', put)
-                bestaand_rij += 1
-                teller_b += 1
-
-    nieuw_rij = 9
-    teller_n = 1
-    for fractie in fracties:
-        aantal = int(containers.get(fractie, {}).get("nieuw", 0))
-        for _ in range(aantal):
-            if nieuw_rij <= 13:
-                set_cell(info_sheet, f'A{nieuw_rij}', f"{teller_n} OOC {fractie}")
-                set_cell(info_sheet, f'B{nieuw_rij}', "OOC........")
-                set_cell(info_sheet, f'C{nieuw_rij}', "Bouwjaar")
-                set_cell(info_sheet, f'F{nieuw_rij}', "monolitisch")
-                for i, put in enumerate(put_waarden):
-                    set_cell(info_sheet, f'E{nieuw_rij + i}', put)
-                nieuw_rij += 1
-                teller_n += 1
+    # --- Nieuwe containers (rijen 9 t/m 13, max 5) ---
+    for teller, container in enumerate(nieuw_lijst[:5], start=1):
+        _vul_container_rij(info_sheet, rij=8 + teller, teller=teller,
+                           container=container, status_label="Nieuw")
 
     # Loopafstand
     if loopafstand:
@@ -170,7 +236,8 @@ def generate_excel(data: dict) -> str:
             pass
 
     # Adres
-    google_url = f"https://www.google.nl/maps/place/{straat} {huisnr}{toev}, {plaats}/data=!3m1!1e3"
+    google_url = (f"https://www.google.nl/maps/place/"
+                  f"{straat} {huisnr}{toev}, {plaats}/data=!3m1!1e3")
     set_cell(general_sheet, 'B19', straat)
     set_cell(general_sheet, 'B20', postcode)
     set_cell(general_sheet, 'B21', wijk)
@@ -188,7 +255,7 @@ def generate_excel(data: dict) -> str:
     general_sheet.add_data_validation(dv2)
     dv2.add("B33")
 
-    # Vaste screenshots vanuit output_dir
+    # Screenshots
     screenshot_to_range = {
         'Locatiefoto': ('A68',  'H92'),
         'Kaart':       ('A94',  'H118'),
@@ -202,7 +269,7 @@ def generate_excel(data: dict) -> str:
         if os.path.exists(img_path):
             add_image_to_range(general_sheet, img_path, fc, tc)
 
-    # Extra foto's (meegegeven als paden of aanwezig in output_dir)
+    # Extra foto's
     vaste = set(screenshot_to_range.keys()) | {'Logo', 'TransLogo'}
     if extra_fotos:
         candidates = [p for p in extra_fotos if os.path.exists(p)]
@@ -226,7 +293,6 @@ def generate_excel(data: dict) -> str:
                 add_image_to_range(general_sheet, os.path.join(KLIC, f), 'A135', 'H184')
                 break
 
-    # Opslaan
     out_path = os.path.join(output_dir, f"{veilige_code}.xlsm")
     workbook.save(out_path)
     return out_path

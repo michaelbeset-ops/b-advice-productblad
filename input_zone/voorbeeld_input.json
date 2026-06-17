@@ -1,22 +1,64 @@
 {
-    "opdrachtgever": "Barendrecht",
-    "plaats": "Barendrecht",
-    "wijk": "Vrijenburg",
-    "straat": "Doormanstraat",
-    "huisnummer": "12",
+    "opdrachtgever": "Dordrecht",
+    "plaats": "Dordrecht",
+    "wijk": "Crabbehof",
+    "straat": "Vrieseweg",
+    "huisnummer": "81",
     "toevoeging": "",
-    "postcode": "2993 EH",
-    "coordinaten": "51.8556, 4.5386",
-    "huishoudens": "48",
-    "opmerkingen": "Geen bijzonderheden",
-    "loopafstand": "75",
+    "postcode": "3311NV",
+    "coordinaten": "51.8112254, 4.6727799",
+    "huishoudens": "127",
+    "opmerkingen": "",
+    "loopafstand": "127",
+
     "containers": {
-        "Rest":    {"bestaand": 2, "nieuw": 1},
-        "GFT":     {"bestaand": 1, "nieuw": 0},
-        "PMD":     {"bestaand": 0, "nieuw": 1},
-        "Papier":  {"bestaand": 1, "nieuw": 0},
-        "Glas":    {"bestaand": 0, "nieuw": 0},
-        "Textiel": {"bestaand": 0, "nieuw": 0}
+        "bestaand": [
+
+            {
+                "preset":  "OOC",
+                "fractie": "REST"
+            },
+
+            {
+                "preset":  "OOC",
+                "fractie": "PMD"
+            },
+
+            {
+                "preset":  "BOC_PUT",
+                "fractie": "GFT"
+            },
+
+            {
+                "preset":  "BOC_PUT",
+                "fractie": "PMD"
+            },
+
+            {
+                "preset":  "BOC",
+                "fractie": "GFT"
+            }
+
+        ],
+        "nieuw": [
+
+            {
+                "preset":  "BOC",
+                "fractie": "OPK"
+            },
+
+            {
+                "preset":  "BOC",
+                "fractie": "GLAS"
+            },
+
+            {
+                "preset":  "BOC",
+                "fractie": "TEXTIEL"
+            }
+
+        ]
     },
+
     "extra_fotos": []
 }
