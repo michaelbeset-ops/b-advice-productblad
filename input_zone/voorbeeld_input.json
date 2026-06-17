@@ -1,0 +1,22 @@
+{
+    "opdrachtgever": "Barendrecht",
+    "plaats": "Barendrecht",
+    "wijk": "Vrijenburg",
+    "straat": "Doormanstraat",
+    "huisnummer": "12",
+    "toevoeging": "",
+    "postcode": "2993 EH",
+    "coordinaten": "51.8556, 4.5386",
+    "huishoudens": "48",
+    "opmerkingen": "Geen bijzonderheden",
+    "loopafstand": "75",
+    "containers": {
+        "Rest":    {"bestaand": 2, "nieuw": 1},
+        "GFT":     {"bestaand": 1, "nieuw": 0},
+        "PMD":     {"bestaand": 0, "nieuw": 1},
+        "Papier":  {"bestaand": 1, "nieuw": 0},
+        "Glas":    {"bestaand": 0, "nieuw": 0},
+        "Textiel": {"bestaand": 0, "nieuw": 0}
+    },
+    "extra_fotos": []
+}
