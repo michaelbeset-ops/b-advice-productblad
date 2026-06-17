@@ -1,0 +1,10 @@
+Noord Oost
+Noord West
+Zuid Oost
+Zuid West
+Noord
+Oost
+Zuid
+West
+
+

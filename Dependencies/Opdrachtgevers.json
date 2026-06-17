@@ -1,0 +1,138 @@
+{
+  "opdrachtgevers": [
+    {
+      "naam": "Reinigingsbedrijf Midden Nederland",
+      "plaatsen": [
+        {"naam": "Nieuwegein", "wijken": ["Noord Oost", "Noord West", "Zuid Oost", "Zuid West", "Noord", "Oost", "Zuid", "West"]},
+        {"naam": "IJsselstein", "wijken": ["Noord Oost", "Noord West", "Zuid Oost", "Zuid West", "Noord", "Oost", "Zuid", "West"]},
+        {"naam": "Houten", "wijken": ["Noord Oost", "Noord West", "Zuid Oost", "Zuid West", "Noord", "Oost", "Zuid", "West"]},
+        {"naam": "Odijk", "wijken": ["Noord Oost", "Noord West", "Zuid Oost", "Zuid West", "Noord", "Oost", "Zuid", "West"]},
+        {"naam": "Soest", "wijken": ["Noord Oost", "Noord West", "Zuid Oost", "Zuid West", "Noord", "Oost", "Zuid", "West"]},
+        {"naam": "Zeist", "wijken": ["Noord Oost", "Noord West", "Zuid Oost", "Zuid West", "Noord", "Oost", "Zuid", "West"]},
+        {"naam": "Baarn", "wijken": ["Noord Oost", "Noord West", "Zuid Oost", "Zuid West", "Noord", "Oost", "Zuid", "West"]},
+        {"naam": "Bunnik", "wijken": ["Noord Oost", "Noord West", "Zuid Oost", "Zuid West", "Noord", "Oost", "Zuid", "West"]}
+      ]
+    },
+    {
+      "naam": "Oegstgeest",
+      "plaatsen": [
+        {"naam": "Oegstgeest", "wijken": ["Noord", "Zuid"]}
+      ]
+    },
+    {
+      "naam": "Lansingerland",
+      "plaatsen": [
+        {"naam": "Berkel & Rodenrijs", "wijken": ["Noord", "Zuid"]},
+        {"naam": "Bergschenhoek", "wijken": ["Noord", "Zuid"]},
+        {"naam": "Bleiswijk", "wijken": ["Noord", "Zuid"]}
+      ]
+    },
+    {
+      "naam": "Leiden",
+      "plaatsen": [
+        {
+          "naam": "Leiden",
+          "wijken": [
+            "Binnenstad", "Stationdistrict", "Noord", "Roodenburgerdistrict",
+            "Bos- en Gasthuisdistrict", "Morsdistrict", "Boerhaavedistrict",
+            "Merenwijk", "Stevenshof"
+          ]
+        }
+      ]
+    },
+    {
+      "naam": "Maassluis",
+      "plaatsen": [
+        {
+          "naam": "Maassluis",
+          "wijken": [
+            "Burgemeesterwijk", "Centrum", "Dalenbuurt", "Vertowijk",
+            "Drevenbuurt", "Kapelpolder", "Oranjewijk", "Vogelwijk",
+            "Zwembadwijk", "Molenbuurt"
+          ]
+        }
+      ]
+    },
+    {
+      "naam": "Zoetermeer",
+      "plaatsen": [
+        {"naam": "Zoetermeer", "wijken": ["Oosterheem", "Noordhoven", "Seghwaert"]}
+      ]
+    },
+    {
+      "naam": "Westland",
+      "plaatsen": [
+        {
+          "naam": "s-Gravenzande",
+          "wijken": [
+            "Centrum", "Edelstenenwijk", "Heenweh", "Nieuwe Vaart", "Oostzijde",
+            "Oudeland", "Teylingen", "Tuinveld", "Vreeburgh", "Vreelande",
+            "Zandevelt", "Het nieuwe water"
+          ]
+        },
+        {"naam": "Honselersdijk", "wijken": ["Noord", "Oost", "Zuid", "West"]},
+        {"naam": "Maasdijk", "wijken": ["Noord", "Oost", "Zuid", "West"]},
+        {"naam": "Poeldijk", "wijken": ["Noord", "Oost", "Zuid", "West"]},
+        {"naam": "Monster", "wijken": ["Noord", "Oost", "Zuid", "West"]},
+        {"naam": "Naaldwijk", "wijken": ["Noord", "Oost", "Zuid", "West"]},
+        {"naam": "Wateringen", "wijken": ["Noord", "Oost", "Zuid", "West"]},
+        {"naam": "De Lier", "wijken": ["Noord", "Oost", "Zuid", "West"]},
+        {
+          "naam": "Kwintsheul",
+          "wijken": [
+            "Centrum", "Edelstenenwijk", "Heenweh", "Nieuwe Vaart", "Oostzijde",
+            "Oudeland", "Teylingen", "Tuinveld", "Vreeburgh", "Vreelande",
+            "Zandevelt", "Het nieuwe water"
+          ]
+        }
+      ]
+    },
+    {
+      "naam": "BarAfvalbeheer",
+      "plaatsen": [
+        {
+          "naam": "Barendrecht",
+          "wijken": [
+            "Centrum", "Noord", "Binnenland", "Oranjewijk", "Buitenoord",
+            "Ter Leede", "Paddewei", "Molenvliet", "Nieuweland", "Dorp",
+            "Smitshoek", "Voordijk", "Meerwede", "Waterkant", "Havenkwartier",
+            "Gaatkensoog", "Riederhoek", "Vrijhoekakker", "Vrijenburg"
+          ]
+        },
+        {
+          "naam": "Ridderkerk",
+          "wijken": [
+            "Centrum", "West", "Oost", "Drievliet", "Het Zand",
+            "Slikkerveer", "Bolnes", "Oostendam", "Donkersloot",
+            "Verenambacht", "Cornelisland"
+          ]
+        },
+        {
+          "naam": "Rhoon",
+          "wijken": [
+            "Centrum", "Oude Koedood", "Noord", "Zuid",
+            "Ghijseland en Huyters", "Overhoeken", "Portland",
+            "Essendael", "Poldergebied"
+          ]
+        },
+        {
+          "naam": "Poortugaal",
+          "wijken": ["Dorp", "Zuid", "Oost", "West", "Kasteeltuin"]
+        }
+      ]
+    },
+    {
+      "naam": "Dordrecht",
+      "plaatsen": [
+        {
+          "naam": "Dordrecht",
+          "wijken": [
+            "Krispijn Vierkant", "Krispijn Bloemenbuurt", "Staart OOST",
+            "Staart WEST", "Dubbeldam", "Stadspolders", "Sterrenburg",
+            "19e eeuwse schil", "Crabbehof"
+          ]
+        }
+      ]
+    }
+  ]
+}
