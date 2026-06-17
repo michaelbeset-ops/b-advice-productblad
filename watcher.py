@@ -21,7 +21,7 @@ import sys
 import time
 
 from watchdog.events import FileSystemEventHandler
-from watchdog.observers import Observer
+from watchdog.observers.polling import PollingObserver  # werkt altijd op Windows
 
 FILE_LOCATION = os.path.dirname(os.path.realpath(__file__))
 INPUT_DIR  = os.path.join(FILE_LOCATION, "input_zone")
@@ -42,12 +42,25 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
+# Bijhouden welke bestanden al verwerkt zijn (voorkomt dubbele verwerking)
+al_verwerkt = set()
+
 
 def verwerk_json(json_pad: str):
+    # Normaliseer pad zodat hoofdletters/slashes niet uitmaken op Windows
+    json_pad = os.path.normpath(json_pad)
     bestandsnaam = os.path.basename(json_pad)
-    log.info(f"Nieuw bestand gevonden: {bestandsnaam} — verwerking gestart")
 
-    time.sleep(0.5)  # Wacht tot bestand volledig is weggeschreven
+    if json_pad in al_verwerkt:
+        return
+    al_verwerkt.add(json_pad)
+
+    log.info(f"Nieuw bestand gevonden: {bestandsnaam} — verwerking gestart")
+    time.sleep(1.0)  # Wacht tot bestand volledig is weggeschreven
+
+    if not os.path.exists(json_pad):
+        log.warning(f"Bestand verdwenen voor verwerking: {bestandsnaam}")
+        return
 
     try:
         with open(json_pad, "r", encoding="utf-8") as f:
@@ -71,6 +84,8 @@ def verwerk_json(json_pad: str):
 
 
 def _verplaats(bron: str, doel_map: str, naam: str):
+    if not os.path.exists(bron):
+        return
     doel = os.path.join(doel_map, naam)
     if os.path.exists(doel):
         basis, ext = os.path.splitext(naam)
@@ -78,8 +93,27 @@ def _verplaats(bron: str, doel_map: str, naam: str):
     shutil.move(bron, doel)
 
 
+def scan_bestaande_bestanden():
+    """Verwerk JSON-bestanden die al in input_zone lagen toen de watcher startte."""
+    bestanden = [
+        f for f in os.listdir(INPUT_DIR)
+        if f.lower().endswith(".json")
+    ]
+    if bestanden:
+        log.info(f"{len(bestanden)} bestaand(e) bestand(en) gevonden in input_zone — worden nu verwerkt.")
+        for naam in bestanden:
+            verwerk_json(os.path.join(INPUT_DIR, naam))
+    else:
+        log.info("Geen bestaande bestanden in input_zone. Wachten op nieuwe bestanden...")
+
+
 class JsonHandler(FileSystemEventHandler):
     def on_created(self, event):
+        if not event.is_directory and event.src_path.lower().endswith(".json"):
+            verwerk_json(event.src_path)
+
+    def on_modified(self, event):
+        # Vangt ook op als een bestand wordt overschreven/gekopieerd
         if not event.is_directory and event.src_path.lower().endswith(".json"):
             verwerk_json(event.src_path)
 
@@ -97,7 +131,11 @@ if __name__ == "__main__":
     log.info("Stop met Ctrl+C.")
     log.info("-" * 55)
 
-    observer = Observer()
+    # Verwerk bestanden die er al lagen
+    scan_bestaande_bestanden()
+
+    # Start de watcher (PollingObserver = meest betrouwbaar op Windows)
+    observer = PollingObserver(timeout=2)  # controleert elke 2 seconden
     observer.schedule(JsonHandler(), INPUT_DIR, recursive=False)
     observer.start()
 
