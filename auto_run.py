@@ -557,10 +557,13 @@ def open_browsers_en_screenshot(data: dict, output_dir: str):
     )
 
     options = webdriver.ChromeOptions()
-    options.add_argument("--start-maximized")
+    options.add_argument("--headless=new")        # onzichtbaar draaien
+    options.add_argument("--window-size=1920,1080")  # vaste schermgrootte voor screenshots
     options.add_argument("--disable-infobars")
     options.add_argument("--disable-popup-blocking")
     options.add_argument("--disable-notifications")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--no-sandbox")
     options.add_argument("--lang=nl-NL")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option("useAutomationExtension", False)
