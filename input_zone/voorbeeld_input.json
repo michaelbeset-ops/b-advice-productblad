@@ -13,40 +13,50 @@
 
     "containers": {
         "bestaand": [
+
             {
-                "fractie":         "REST",
-                "containernummer": "OOC12345",
-                "type_put":        "TTC 5m3",
-                "constructie":     "Monolitisch",
-                "bouwjaar":        "2015",
-                "vloer":           "Klapvloer"
+                "preset":  "OOC",
+                "fractie": "REST"
             },
+
             {
-                "fractie":         "REST",
-                "containernummer": "OOC67890",
-                "type_put":        "TTC 5m3",
-                "constructie":     "Monolitisch",
-                "bouwjaar":        "2015",
-                "vloer":           "Klapvloer"
+                "preset":  "OOC",
+                "fractie": "PMD"
+            },
+
+            {
+                "preset":  "BOC_PUT",
+                "fractie": "GFT"
+            },
+
+            {
+                "preset":  "BOC_PUT",
+                "fractie": "PMD"
+            },
+
+            {
+                "preset":  "BOC",
+                "fractie": "GFT"
             }
+
         ],
         "nieuw": [
+
             {
-                "fractie":         "REST",
-                "containernummer": "",
-                "type_put":        "TTC 5m3",
-                "constructie":     "Monolitisch",
-                "bouwjaar":        "",
-                "vloer":           "Klapvloer"
+                "preset":  "BOC",
+                "fractie": "OPK"
             },
+
             {
-                "fractie":         "PMD",
-                "containernummer": "",
-                "type_put":        "TTC 5m3",
-                "constructie":     "Monolitisch",
-                "bouwjaar":        "",
-                "vloer":           "Klapvloer"
+                "preset":  "BOC",
+                "fractie": "GLAS"
+            },
+
+            {
+                "preset":  "BOC",
+                "fractie": "TEXTIEL"
             }
+
         ]
     },
 

@@ -46,13 +46,41 @@ FILE_LOCATION = os.path.dirname(os.path.realpath(__file__))
 DEPS = os.path.join(FILE_LOCATION, "Dependencies")
 KLIC = os.path.join(FILE_LOCATION, "KLIC")
 
-# Standaardwaarden die worden gebruikt als een veld leeg is
-STANDAARD = {
-    "containernummer": "OOC.........",
-    "type_put":        "TTC 5m3",
-    "constructie":     "Monolitisch",
-    "bouwjaar":        "Bouwjaar",
-    "vloer":           "Klapvloer",
+# ---------------------------------------------------------------------------
+# Presets: standaardwaarden per containertype
+#
+# Gebruik in JSON:  "preset": "OOC"  of  "preset": "BOC_PUT"  of  "preset": "BOC"
+# Je kunt altijd een veld handmatig overschrijven door het mee te geven.
+#
+#  OOC      → ondergrondse container met betonput en klapvloer
+#  BOC_PUT  → bovengrondse container MET betonput (GFT, PMD)
+#  BOC      → bovengrondse container ZONDER betonput (OPK, Glas, Textiel, ...)
+# ---------------------------------------------------------------------------
+PRESETS = {
+    "OOC": {
+        "containernummer": "OOC",
+        "type_put":        "TTC 5m3",
+        "put":             "Put",
+        "constructie":     "Monolitisch",
+        "bouwjaar":        "Bouwjaar",
+        "vloer":           "Klapvloer",
+    },
+    "BOC_PUT": {
+        "containernummer": "BOC",
+        "type_put":        "TTC 5m3",
+        "put":             "Put",
+        "constructie":     "Monolitisch",
+        "bouwjaar":        "Bouwjaar",
+        "vloer":           "",
+    },
+    "BOC": {
+        "containernummer": "BOC",
+        "type_put":        "",
+        "put":             "",
+        "constructie":     "Monolitisch",
+        "bouwjaar":        "Bouwjaar",
+        "vloer":           "",
+    },
 }
 
 
@@ -90,22 +118,35 @@ def add_image_to_range(sheet, img_path, from_cell, to_cell):
 
 
 def _vul_container_rij(sheet, rij: int, teller: int, container: dict, status_label: str):
-    """Vul één containerrij in op het info-blad (rijen 3-7 bestaand, 9-13 nieuw)."""
-    fractie      = str(container.get("fractie", "")).upper()
-    containernr  = str(container.get("containernummer", "")).strip() or STANDAARD["containernummer"]
-    type_put     = str(container.get("type_put",     "")).strip() or STANDAARD["type_put"]
-    constructie  = str(container.get("constructie",  "")).strip() or STANDAARD["constructie"]
-    bouwjaar     = str(container.get("bouwjaar",     "")).strip() or STANDAARD["bouwjaar"]
-    vloer        = str(container.get("vloer",        "")).strip() or STANDAARD["vloer"]
+    """
+    Vul één containerrij in op het info-blad.
+    Bestaand: rijen 3-7  |  Nieuw: rijen 9-13
 
-    set_cell(sheet, f'A{rij}', f"{teller}. OOC {fractie}")
-    set_cell(sheet, f'B{rij}', containernr)
-    set_cell(sheet, f'C{rij}', status_label)   # "Bestaand" of "Nieuw"
-    set_cell(sheet, f'D{rij}', type_put)
-    set_cell(sheet, f'E{rij}', "PUT")
-    set_cell(sheet, f'F{rij}', constructie)
-    set_cell(sheet, f'G{rij}', bouwjaar)
-    set_cell(sheet, f'H{rij}', vloer)
+    Werkt op twee manieren:
+      1. Met preset:  {"preset": "OOC", "fractie": "REST"}
+         → alle waarden komen uit PRESETS, je kunt velden nog losse overschrijven
+      2. Volledig handmatig: alle velden zelf opgeven
+    """
+    # Preset laden als opgegeven
+    preset_naam = str(container.get("preset", "")).upper()
+    basis = dict(PRESETS.get(preset_naam, PRESETS["OOC"]))  # OOC als fallback
+
+    # Handmatige velden overschrijven de preset
+    for veld in ("containernummer", "type_put", "put", "constructie", "bouwjaar", "vloer"):
+        if container.get(veld, "") not in ("", None):
+            basis[veld] = str(container[veld])
+
+    fractie     = str(container.get("fractie", "")).upper()
+    container_prefix = preset_naam if preset_naam in PRESETS else "OOC"
+
+    set_cell(sheet, f'A{rij}', f"{teller}. {container_prefix} {fractie}")
+    set_cell(sheet, f'B{rij}', basis["containernummer"])
+    set_cell(sheet, f'C{rij}', status_label)
+    set_cell(sheet, f'D{rij}', basis["type_put"])
+    set_cell(sheet, f'E{rij}', basis["put"])
+    set_cell(sheet, f'F{rij}', basis["constructie"])
+    set_cell(sheet, f'G{rij}', basis["bouwjaar"])
+    set_cell(sheet, f'H{rij}', basis["vloer"])
 
 
 def generate_excel(data: dict) -> str:
