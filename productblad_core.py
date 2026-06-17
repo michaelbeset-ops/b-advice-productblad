@@ -140,7 +140,13 @@ def _vul_container_rij(sheet, rij: int, teller: int, container: dict, status_lab
     container_prefix = preset_naam if preset_naam in PRESETS else "OOC"
 
     set_cell(sheet, f'A{rij}', f"{teller}. {container_prefix} {fractie}")
-    set_cell(sheet, f'B{rij}', basis["containernummer"])
+
+    # Kolom B heeft een Excel-formule die automatisch "OOC........." invult.
+    # Alleen overschrijven als er een specifiek containernummer is opgegeven.
+    specifiek_nr = str(container.get("containernummer", "")).strip()
+    if specifiek_nr and specifiek_nr not in ("OOC", "BOC", "OOC.........", ""):
+        set_cell(sheet, f'B{rij}', specifiek_nr)
+
     set_cell(sheet, f'C{rij}', status_label)
     set_cell(sheet, f'D{rij}', basis["type_put"])
     set_cell(sheet, f'E{rij}', basis["put"])
@@ -192,16 +198,16 @@ def generate_excel(data: dict) -> str:
     info_sheet    = workbook[sheets[0]]
     general_sheet = workbook[sheets[1]]
 
+    # Gemeente op Projectomschrijving (sheet 0)
     set_cell(info_sheet, 'D2', f"Gemeente: {opdrachtgever}")
 
-    # --- Bestaande containers (rijen 3 t/m 7, max 5) ---
+    # Containers op Projectblad (sheet 1) — rijen 3-7 bestaand, 9-13 nieuw
     for teller, container in enumerate(bestaand_lijst[:5], start=1):
-        _vul_container_rij(info_sheet, rij=2 + teller, teller=teller,
+        _vul_container_rij(general_sheet, rij=2 + teller, teller=teller,
                            container=container, status_label="Bestaand")
 
-    # --- Nieuwe containers (rijen 9 t/m 13, max 5) ---
     for teller, container in enumerate(nieuw_lijst[:5], start=1):
-        _vul_container_rij(info_sheet, rij=8 + teller, teller=teller,
+        _vul_container_rij(general_sheet, rij=8 + teller, teller=teller,
                            container=container, status_label="Nieuw")
 
     # Loopafstand
